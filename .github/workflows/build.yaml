@@ -46,11 +46,6 @@ jobs:
            echo -n "https://github.com/${GITHUB_REPOSITORY}/commit/" > src/runtime/version
            git rev-parse --short HEAD  | xargs >> src/runtime/version
 
-    - name: Install qemu for cross-compilation
-      run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-user-static qemu-user-binfmt binfmt-support
-
     - name: Build
       env:
         ARCH: ${{ matrix.appimage_arch }}
@@ -102,6 +97,11 @@ jobs:
       run: |
            echo -n "https://github.com/${GITHUB_REPOSITORY}/commit/" > src/runtime/version
            git rev-parse --short HEAD  | xargs >> src/runtime/version
+
+    - name: Install qemu for cross-compilation
+      run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static qemu-user-binfmt binfmt-support
 
     - name: Build in chroot
       env:
