@@ -37,7 +37,11 @@ image_name=type2-runtime-build
 # first, we need to build the image
 # if nothing has changed, it'll run over this within a few seconds
 repo_root_dir="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")"/../../
-docker build --platform "$docker_platform" -t "$image_name" -f "$repo_root_dir"/scripts/docker/Dockerfile "$repo_root_dir"
+if [[ "${ARCH}" != "loongarch64" ]]; then
+    docker build --platform "$docker_platform" -t "$image_name" -f "$repo_root_dir"/scripts/docker/Dockerfile "$repo_root_dir"
+else
+    docker build --platform "$docker_platform" -t "$image_name" -f "$repo_root_dir"/scripts/docker/Dockerfile-loongarch64 "$repo_root_dir"
+fi
 
 docker_run_args=()
 [[ -t 0 ]] && docker_run_args+=("-t")
