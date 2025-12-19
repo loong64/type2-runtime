@@ -6,7 +6,7 @@ ALPINE_RELEASE="3.21.0"
 
 if [ -z "${ALPINE_ARCH}" ]; then
     echo "Usage: env ALPINE_ARCH=<arch> $0"
-    echo "Example values: x86_64 x86 armhf aarch64"
+    echo "Example values: x86_64 x86 armhf aarch64 loongarch64"
     exit 2
 fi
 
@@ -74,6 +74,7 @@ if [ \
   "$(uname -m)" = "${ALPINE_ARCH}" \
   -o "${ALPINE_ARCH}" = "x86" -a "$(uname -m)" = "x86_64" \
   -o "${ALPINE_ARCH}" = "armhf" -a "$(uname -m)" = "aarch64" \
+  -o "${ALPINE_ARCH}" = "loongarch64" -a "$(uname -m)" = "loongarch64" \
 ]; then
     sudo chroot miniroot /bin/sh -ex /scripts/chroot/build.sh
 elif [ "${ALPINE_ARCH}" = "aarch64" ] ; then
@@ -82,6 +83,9 @@ elif [ "${ALPINE_ARCH}" = "aarch64" ] ; then
 elif [ "${ALPINE_ARCH}" = "armhf" ] ; then
     sudo cp "$(which qemu-arm-static)" miniroot/usr/bin
     sudo chroot miniroot qemu-arm-static /bin/sh -ex /scripts/chroot/build.sh
+elif [ "${ALPINE_ARCH}" = "loongarch64" ]; then
+    sudo cp "$(which qemu-loongarch64-static)" miniroot/usr/bin
+    sudo chroot miniroot qemu-loongarch64-static /bin/sh -ex /scripts/chroot/build.sh
 else
     echo "Edit chroot_build.sh to support this architecture as well, it should be easy"
     exit 1
