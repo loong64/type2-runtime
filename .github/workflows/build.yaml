@@ -101,7 +101,7 @@ jobs:
     - name: Install qemu for cross-compilation
       run: |
           sudo apt-get update
-          sudo apt-get install -y qemu-user-static qemu-user-binfmt binfmt-support
+          sudo apt-get install -y qemu-user-static binfmt-support
 
     - name: Build in chroot
       env:
