@@ -21,55 +21,55 @@ defaults:
     shell: sh
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-        - appimage_arch: i686
-          runner: ubuntu-24.04
-        - appimage_arch: x86_64
-          runner: ubuntu-24.04
-        - appimage_arch: armhf
-          runner: ubuntu-24.04-arm
-        - appimage_arch: aarch64
-          runner: ubuntu-24.04-arm
+  # build:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #       - appimage_arch: i686
+  #         runner: ubuntu-24.04
+  #       - appimage_arch: x86_64
+  #         runner: ubuntu-24.04
+  #       - appimage_arch: armhf
+  #         runner: ubuntu-24.04-arm
+  #       - appimage_arch: aarch64
+  #         runner: ubuntu-24.04-arm
 
-    runs-on: ${{ matrix.runner }}
+  #   runs-on: ${{ matrix.runner }}
 
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v5
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v5
 
-    - name: Get git hash
-      run: |
-           echo -n "https://github.com/${GITHUB_REPOSITORY}/commit/" > src/runtime/version
-           git rev-parse --short HEAD  | xargs >> src/runtime/version
+  #   - name: Get git hash
+  #     run: |
+  #          echo -n "https://github.com/${GITHUB_REPOSITORY}/commit/" > src/runtime/version
+  #          git rev-parse --short HEAD  | xargs >> src/runtime/version
 
-    - name: Build
-      env:
-        ARCH: ${{ matrix.appimage_arch }}
-      run: |
-          # make sure to collect artifacts in a separate directory
-          # makes uploading easier
-          mkdir -p out
-          (cd out && ../scripts/docker/build-with-docker.sh)
+  #   - name: Build
+  #     env:
+  #       ARCH: ${{ matrix.appimage_arch }}
+  #     run: |
+  #         # make sure to collect artifacts in a separate directory
+  #         # makes uploading easier
+  #         mkdir -p out
+  #         (cd out && ../scripts/docker/build-with-docker.sh)
 
-    - name: Sign
-      env:
-        SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-      # skip signing if secret is not available (e.g., if run from a PR made by somebody outside of this repository)
-      if: ${{ env.SIGNING_KEY != '' }}
-      run: |
-        find out
-        scripts/sign.sh out/runtime-*
-        # copy pubkey so that it's included with the files uploaded to the release page
-        cp signing-pubkey.asc out/
+  #   - name: Sign
+  #     env:
+  #       SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+  #     # skip signing if secret is not available (e.g., if run from a PR made by somebody outside of this repository)
+  #     if: ${{ env.SIGNING_KEY != '' }}
+  #     run: |
+  #       find out
+  #       scripts/sign.sh out/runtime-*
+  #       # copy pubkey so that it's included with the files uploaded to the release page
+  #       cp signing-pubkey.asc out/
 
-    - uses: actions/upload-artifact@v5
-      with:
-        name: artifacts ${{ matrix.appimage_arch }}
-        path: out/*
+  #   - uses: actions/upload-artifact@v5
+  #     with:
+  #       name: artifacts ${{ matrix.appimage_arch }}
+  #       path: out/*
 
   build-in-chroot:
     strategy:
@@ -108,6 +108,22 @@ jobs:
         ALPINE_ARCH: ${{ matrix.alpine_arch }}
       run: |
         scripts/chroot/chroot_build.sh
+
+    - name: Sign
+      env:
+        SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+      # skip signing if secret is not available (e.g., if run from a PR made by somebody outside of this repository)
+      if: ${{ env.SIGNING_KEY != '' }}
+      run: |
+        find out
+        scripts/sign.sh out/runtime-*
+        # copy pubkey so that it's included with the files uploaded to the release page
+        cp signing-pubkey.asc out/
+
+    - uses: actions/upload-artifact@v5
+      with:
+        name: artifacts ${{ matrix.appimage_arch }}
+        path: out/*
 
   upload:
     name: Create release and upload artifacts
